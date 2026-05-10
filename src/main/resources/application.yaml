@@ -1,0 +1,16 @@
+server:
+  port: 8901
+
+logging:
+  level:
+    root: INFO
+    org.llled.wledmux: DEBUG
+
+multiplexer:
+  ddp-listen-port: 4048
+  frame-width: 64
+  frame-height: 48
+  ip-block: ""
+  discovery-interval-seconds: 60
+  device-timeout-minutes: 5
+  skip-ips: []
