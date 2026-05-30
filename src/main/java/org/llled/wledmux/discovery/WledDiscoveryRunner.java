@@ -45,9 +45,13 @@ public class WledDiscoveryRunner {
 
         log.info("Running WLED discovery on {}", ipBlock);
 
-        Set<String> discoveredIps = discoverViaMdns();
-        Set<String> rangeIps = discoverViaIpRange();
-        discoveredIps.addAll(rangeIps);
+        Set<String> discoveredIps = new HashSet<>();
+        if (config.isMdnsDiscoveryEnabled()) {
+            discoveredIps.addAll(discoverViaMdns());
+        }
+        if (config.isIpRangeDiscoveryEnabled()) {
+            discoveredIps.addAll(discoverViaIpRange());
+        }
 
         Set<String> skipIps = new HashSet<>(config.getSkipIps());
 
@@ -122,8 +126,10 @@ public class WledDiscoveryRunner {
                 public void serviceResolved(ServiceEvent event) {
                     ServiceInfo info = event.getInfo();
                     if (info.getHostAddresses().length > 0) {
-                        ips.add(info.getHostAddresses()[0]);
-                        log.info("mDNS discovered WLED: {} at {}", info.getName(), info.getHostAddresses()[0]);
+                        String host = info.getHostAddresses()[0];
+                        if (ips.add(host)) {
+                            log.info("mDNS discovered WLED: {} at {}", info.getName(), host);
+                        }
                     }
                 }
             });

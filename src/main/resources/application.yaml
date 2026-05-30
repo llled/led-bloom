@@ -13,4 +13,6 @@ multiplexer:
   ip-block: ""
   discovery-interval-seconds: 60
   device-timeout-minutes: 5
+  mdns-discovery-enabled: true
+  ip-range-discovery-enabled: true
   skip-ips: []

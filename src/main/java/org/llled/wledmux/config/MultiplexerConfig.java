@@ -1,5 +1,6 @@
 package org.llled.wledmux.config;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,19 @@ public class MultiplexerConfig {
     private String ipBlock = "";
     private int discoveryIntervalSeconds = 60;
     private int deviceTimeoutMinutes = 5;
+    private boolean mdnsDiscoveryEnabled = true;
+    private boolean ipRangeDiscoveryEnabled = true;
     private List<String> skipIps = new ArrayList<>();
+
+    @PostConstruct
+    void validate() {
+        if (!mdnsDiscoveryEnabled && !ipRangeDiscoveryEnabled) {
+            throw new IllegalStateException(
+                "At least one discovery method must be enabled. " +
+                "Set multiplexer.mdns-discovery-enabled=true and/or " +
+                "multiplexer.ip-range-discovery-enabled=true.");
+        }
+    }
 
     public int getDdpListenPort() { return ddpListenPort; }
     public void setDdpListenPort(int ddpListenPort) { this.ddpListenPort = ddpListenPort; }
@@ -35,6 +48,12 @@ public class MultiplexerConfig {
 
     public int getDeviceTimeoutMinutes() { return deviceTimeoutMinutes; }
     public void setDeviceTimeoutMinutes(int deviceTimeoutMinutes) { this.deviceTimeoutMinutes = deviceTimeoutMinutes; }
+
+    public boolean isMdnsDiscoveryEnabled() { return mdnsDiscoveryEnabled; }
+    public void setMdnsDiscoveryEnabled(boolean mdnsDiscoveryEnabled) { this.mdnsDiscoveryEnabled = mdnsDiscoveryEnabled; }
+
+    public boolean isIpRangeDiscoveryEnabled() { return ipRangeDiscoveryEnabled; }
+    public void setIpRangeDiscoveryEnabled(boolean ipRangeDiscoveryEnabled) { this.ipRangeDiscoveryEnabled = ipRangeDiscoveryEnabled; }
 
     public List<String> getSkipIps() { return skipIps; }
     public void setSkipIps(List<String> skipIps) { this.skipIps = skipIps; }
