@@ -43,6 +43,13 @@ public class StatusController {
         status.put("deviceCount", registry.size());
         status.put("activeForwarders", forwarder.getActiveDeviceCount());
         status.put("framesReceived", forwarder.getFrameCount());
+        status.put("forwardedPackets", forwarder.getForwardedPackets());
+        status.put("framesPerSecond", forwarder.getFramesPerSecond());
+        status.put("packetsPerSecond", forwarder.getPacketsPerSecond());
+        status.put("fanoutMicrosLast", forwarder.getLastFanoutMicros());
+        status.put("fanoutMicrosAvg", forwarder.getAvgFanoutMicros());
+        status.put("fanoutMicrosMax", forwarder.getMaxFanoutMicros());
+        status.put("frameIntervalMicrosAt60", 16667);
         status.put("errors", forwarder.getErrorCount());
         return status;
     }
