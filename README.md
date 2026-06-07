@@ -52,7 +52,7 @@ Or build a fat jar:
 java -jar build/libs/LED-Bloom-0.1.0.jar
 ```
 
-The HTTP Web interface and API listen on `:8901`, the DDP receiver on `:4048` (defaults). The status web page at http://<host-ip>/:8901 will list the active config parameters and discovered devices.
+The HTTP Web interface and API listen on `:8901`, the DDP receiver on `:4048` (defaults). The status web page at http://led-bloom.local:8901/ will list the active config parameters and discovered devices.
 
 ## Configuration
 
