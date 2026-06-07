@@ -4,7 +4,7 @@ Do you want to run an arbitrary number of WLED devices without needing to regist
 
 You point any [DDP](http://www.3waylabs.com/ddp/) source (xLights, WLED Sync, a custom renderer, etc.) at this service. It discovers WLED devices on your LAN, learns their matrix dimensions, places each one at a random position inside a virtual master canvas, then slices each frame and forwards the corresponding pixels to each device over DDP.
 
-Built to power the syncing of wearable  LED costume pieces for the Lava Lounge camp at Burning Flipside. As each new wearable comes into wifi range, this software picks it up, registers it, and starts sending, leading to really fun synced effects. 
+Built to power the syncing of wearable  LED costume pieces for Lava Lounge events. As each new wearable comes into wifi range, this software picks it up, registers it, and starts sending, leading to really fun synced effects. 
 
 ## How it works
 
