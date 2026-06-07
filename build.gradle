@@ -30,19 +30,19 @@ test {
     useJUnitPlatform()
 }
 
-// --- Scale-testing tools (see src/main/java/org/llled/wledmux/loadtest) ---
+// --- Scale-testing tools (see src/main/java/org/llled/ledbloom/loadtest) ---
 tasks.register('runVirtualReceiver', JavaExec) {
     group = 'loadtest'
     description = 'Run the virtual DDP receiver (binds vr.basePort..vr.basePort+vr.count-1)'
-    mainClass = 'org.llled.wledmux.loadtest.VirtualReceiver'
+    mainClass = 'org.llled.ledbloom.loadtest.VirtualReceiver'
     classpath = sourceSets.main.runtimeClasspath
     systemProperties System.getProperties().findAll { it.key.toString().startsWith('vr.') }
 }
 
 tasks.register('runLoadTest', JavaExec) {
     group = 'loadtest'
-    description = 'Register N virtual devices and stream frames to the multiplexer at lt.fps'
-    mainClass = 'org.llled.wledmux.loadtest.LoadTestRunner'
+    description = 'Register N virtual devices and stream frames to LED Bloom at lt.fps'
+    mainClass = 'org.llled.ledbloom.loadtest.LoadTestRunner'
     classpath = sourceSets.main.runtimeClasspath
     systemProperties System.getProperties().findAll { it.key.toString().startsWith('lt.') }
 }

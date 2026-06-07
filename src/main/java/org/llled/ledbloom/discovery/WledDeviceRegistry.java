@@ -1,6 +1,6 @@
-package org.llled.wledmux.discovery;
+package org.llled.ledbloom.discovery;
 
-import org.llled.wledmux.config.MultiplexerConfig;
+import org.llled.ledbloom.config.LedBloomConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -18,12 +18,12 @@ public class WledDeviceRegistry {
 
     // Keyed by device identity (ip:port).
     private final ConcurrentHashMap<String, WledDevice> devices = new ConcurrentHashMap<>();
-    private final MultiplexerConfig config;
+    private final LedBloomConfig config;
 
     private Consumer<WledDevice> onDeviceAdded;
     private Consumer<WledDevice> onDeviceRemoved;
 
-    public WledDeviceRegistry(MultiplexerConfig config) {
+    public WledDeviceRegistry(LedBloomConfig config) {
         this.config = config;
     }
 

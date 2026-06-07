@@ -1,13 +1,13 @@
-package org.llled.wledmux.forwarder;
+package org.llled.ledbloom.forwarder;
 
 import jakarta.annotation.PreDestroy;
 import org.llled.ddp.DdpClient;
 import org.llled.ddp.DdpException;
 import org.llled.ddp.DdpFrameListener;
 import org.llled.ddp.DdpProtocol;
-import org.llled.wledmux.config.MultiplexerConfig;
-import org.llled.wledmux.discovery.WledDevice;
-import org.llled.wledmux.discovery.WledDeviceRegistry;
+import org.llled.ledbloom.config.LedBloomConfig;
+import org.llled.ledbloom.discovery.WledDevice;
+import org.llled.ledbloom.discovery.WledDeviceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,7 +23,7 @@ public class DdpForwarder implements DdpFrameListener {
 
     private static final Logger log = LoggerFactory.getLogger(DdpForwarder.class);
 
-    private final MultiplexerConfig config;
+    private final LedBloomConfig config;
     private final WledDeviceRegistry registry;
     // All maps keyed by device identity (ip:port).
     private final ConcurrentHashMap<String, DdpClient> clients = new ConcurrentHashMap<>();
@@ -49,7 +49,7 @@ public class DdpForwarder implements DdpFrameListener {
     private long lastFrameSnapshot;
     private long lastPacketSnapshot;
 
-    public DdpForwarder(MultiplexerConfig config, WledDeviceRegistry registry) {
+    public DdpForwarder(LedBloomConfig config, WledDeviceRegistry registry) {
         this.config = config;
         this.registry = registry;
     }

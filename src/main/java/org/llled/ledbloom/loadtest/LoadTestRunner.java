@@ -1,4 +1,4 @@
-package org.llled.wledmux.loadtest;
+package org.llled.ledbloom.loadtest;
 
 import org.llled.ddp.DdpClient;
 import org.llled.ddp.DdpProtocol;
@@ -11,29 +11,29 @@ import java.time.Duration;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * Standalone load-test runner for the WLED multiplexer.
+ * Standalone load-test runner for LED Bloom.
  *
- * <p>Registers N virtual devices via the multiplexer REST API (all pointing at one virtual
- * receiver host across a port range), then streams synthetic DDP frames to the multiplexer
+ * <p>Registers N virtual devices via the LED Bloom REST API (all pointing at one virtual
+ * receiver host across a port range), then streams synthetic DDP frames to the LED Bloom
  * ingress at a target framerate for a fixed duration. Pair it with {@link VirtualReceiver}
  * running on the receiver host.
  *
- * <p>Topology default: this runner runs on the same machine as the multiplexer (so the
+ * <p>Topology default: this runner runs on the same machine as LED Bloom (so the
  * ingress hop is loopback), and the virtual receiver runs on another machine whose IP is
  * passed as {@code lt.receiverHost}.
  *
  * <p>Configuration (system properties):
  * <ul>
- *   <li>{@code lt.muxHost} (default 127.0.0.1) — multiplexer host for REST + DDP ingress</li>
- *   <li>{@code lt.apiPort} (default 8901) — multiplexer REST port</li>
- *   <li>{@code lt.ingressPort} (default 4048) — multiplexer DDP listen port</li>
+ *   <li>{@code lt.muxHost} (default 127.0.0.1) — LED Bloom host for REST + DDP ingress</li>
+ *   <li>{@code lt.apiPort} (default 8901) — LED Bloom REST port</li>
+ *   <li>{@code lt.ingressPort} (default 4048) — LED Bloom DDP listen port</li>
  *   <li>{@code lt.receiverHost} (REQUIRED) — IP the virtual devices are registered with
  *       (the VirtualReceiver machine)</li>
  *   <li>{@code lt.devices} (default 100) — number of virtual devices</li>
  *   <li>{@code lt.baseEgressPort} (default 5000) — first egress port; must match VirtualReceiver's
  *       {@code vr.basePort}</li>
  *   <li>{@code lt.devW}/{@code lt.devH} (default 16x16) — per-device matrix size</li>
- *   <li>{@code lt.masterW}/{@code lt.masterH} (default 64x48) — must match the multiplexer's
+ *   <li>{@code lt.masterW}/{@code lt.masterH} (default 64x48) — must match LED Bloom's
  *       frame-width/frame-height</li>
  *   <li>{@code lt.fps} (default 60) — target send framerate</li>
  *   <li>{@code lt.durationSeconds} (default 30) — how long to stream</li>

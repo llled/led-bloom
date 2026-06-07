@@ -4,9 +4,9 @@ server:
 logging:
   level:
     root: INFO
-    org.llled.wledmux: DEBUG
+    org.llled.ledbloom: DEBUG
 
-multiplexer:
+ledbloom:
   ddp-listen-port: 4048
   frame-width: 64
   frame-height: 48

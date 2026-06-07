@@ -1,6 +1,6 @@
-# WLED Multiplexer
+# LED Bloom
 
-A Spring Boot service that receives a single [DDP](http://www.3waylabs.com/ddp/) frame stream and forwards mapped sub-regions of it to many [WLED](https://kno.wled.ge/) matrices discovered on the local network.
+A Java service that receives a single [DDP](http://www.3waylabs.com/ddp/) frame stream and forwards mapped sub-regions of it to many [WLED](https://kno.wled.ge/) matrices discovered on the local network.
 
 You point any DDP source (xLights, WLED Sync, a custom renderer, etc.) at this service. It discovers WLED devices on your LAN, learns their matrix dimensions, places each one at a random position inside a virtual master canvas, then slices each frame and forwards the corresponding pixels to each device over DDP.
 
@@ -26,7 +26,7 @@ You point any DDP source (xLights, WLED Sync, a custom renderer, etc.) at this s
               WLED matrix #1, #2, #3, ...
 ```
 
-- **Receiver** — listens for DDP on `multiplexer.ddp-listen-port` (default `4048`) for `frame-width × frame-height` RGB frames.
+- **Receiver** — listens for DDP on `ledbloom.ddp-listen-port` (default `4048`) for `frame-width × frame-height` RGB frames.
 - **Discovery** — runs every `discovery-interval-seconds` (default `60s`). Combines mDNS (`_wled._tcp`) with a `/24` IP-range probe. WLED HTTP APIs (`/json/info`, `/ledmap.json`) are queried for matrix dimensions; if those are absent, dimensions are inferred from LED count.
 - **Mapping** — each newly seen device is placed at a random `(translateX, translateY)` inside the master frame. Pixel offsets are pre-computed once per device for fast slicing.
 - **Forwarder** — for every received frame, each device gets its sub-region forwarded as a DDP packet to its own IP.
@@ -47,26 +47,26 @@ Or build a fat jar:
 
 ```sh
 ./gradlew bootJar
-java -jar build/libs/WLED-multiplexer-0.1.0.jar
+java -jar build/libs/LED-Bloom-0.1.0.jar
 ```
 
 The HTTP API listens on `:8901`, the DDP receiver on `:4048` (defaults).
 
 ## Configuration
 
-Edit `src/main/resources/application.yaml`, override with `--key=value` CLI flags, or set env vars (`MULTIPLEXER_FRAME_WIDTH=128` etc.).
+Edit `src/main/resources/application.yaml`, override with `--key=value` CLI flags, or set env vars (`LEDBLOOM_FRAME_WIDTH=128` etc.).
 
 | Key | Default | Notes |
 |---|---|---|
 | `server.port` | `8901` | REST API port |
-| `multiplexer.ddp-listen-port` | `4048` | UDP port for incoming DDP |
-| `multiplexer.frame-width` | `64` | Master canvas width (pixels) |
-| `multiplexer.frame-height` | `48` | Master canvas height (pixels) |
-| `multiplexer.ip-block` | _auto_ | E.g. `192.168.1.` — overrides auto-detection |
-| `multiplexer.discovery-interval-seconds` | `60` | How often to rescan |
-| `multiplexer.device-timeout-minutes` | `5` | Devices not seen for this long are purged |
-| `multiplexer.skip-ips` | `[]` | IPs to ignore during discovery |
-| `logging.level.org.llled.wledmux` | `DEBUG` | App log level |
+| `ledbloom.ddp-listen-port` | `4048` | UDP port for incoming DDP |
+| `ledbloom.frame-width` | `64` | Master canvas width (pixels) |
+| `ledbloom.frame-height` | `48` | Master canvas height (pixels) |
+| `ledbloom.ip-block` | _auto_ | E.g. `192.168.1.` — overrides auto-detection |
+| `ledbloom.discovery-interval-seconds` | `60` | How often to rescan |
+| `ledbloom.device-timeout-minutes` | `5` | Devices not seen for this long are purged |
+| `ledbloom.skip-ips` | `[]` | IPs to ignore during discovery |
+| `logging.level.org.llled.ledbloom` | `DEBUG` | App log level |
 
 ## REST API
 
@@ -98,13 +98,13 @@ curl -X POST http://localhost:8901/api/v1/discovery/trigger
 
 ## Scale testing
 
-A load-test harness lives in `org.llled.wledmux.loadtest`. It measures how many devices the
-multiplexer can push to at a target framerate. Typical setup: run the multiplexer **and** the
+A load-test harness lives in `org.llled.ledbloom.loadtest`. It measures how many devices
+LED Bloom can push to at a target framerate. Typical setup: run LED Bloom **and** the
 sender on one machine (the sender → ingress hop is loopback) and the virtual receiver on a
 second machine; all N virtual devices point at the receiver's IP across a port range, so only
 the real egress fan-out crosses the LAN.
 
-Run the multiplexer with discovery neutralized so it doesn't add noise:
+Run LED Bloom with discovery neutralized so it doesn't add noise:
 
 ```sh
 ./gradlew bootRun --args='--spring.profiles.active=loadtest'
@@ -116,7 +116,7 @@ On the receiver machine, bind a range of ports (one per virtual device):
 ./gradlew runVirtualReceiver "-Dvr.basePort=5000" "-Dvr.count=100"
 ```
 
-On the multiplexer machine, register the devices and stream frames at the target fps:
+On the LED Bloom machine, register the devices and stream frames at the target fps:
 
 ```sh
 ./gradlew runLoadTest "-Dlt.receiverHost=<receiver-ip>" "-Dlt.devices=200" "-Dlt.baseEgressPort=5000" "-Dlt.fps=60" "-Dlt.durationSeconds=30" "-Dlt.masterW=64" "-Dlt.masterH=48" "-Dlt.devW=16" "-Dlt.devH=16"
@@ -131,4 +131,4 @@ Watch the ceiling on `GET /api/v1/status`: `framesPerSecond` should hold at the 
 `frameIntervalMicrosAt60` (16667 µs) is the leading indicator that the single-threaded fan-out
 is saturated. The receiver logs aggregate + per-port FPS so you can spot stragglers. Step
 `lt.devices`/`vr.count` up until one of those breaks. The runner cleans up its devices on exit
-(`-Dlt.cleanup=false` to leave them). See `org.llled.wledmux.loadtest` for all `-Dvr.*`/`-Dlt.*` options.
+(`-Dlt.cleanup=false` to leave them). See `org.llled.ledbloom.loadtest` for all `-Dvr.*`/`-Dlt.*` options.
