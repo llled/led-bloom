@@ -1,4 +1,4 @@
-package org.llled.wledmux.discovery;
+package org.llled.ledbloom.discovery;
 
 import java.time.Instant;
 

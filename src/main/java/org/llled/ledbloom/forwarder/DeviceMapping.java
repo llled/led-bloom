@@ -1,4 +1,4 @@
-package org.llled.wledmux.forwarder;
+package org.llled.ledbloom.forwarder;
 
 public class DeviceMapping {
 

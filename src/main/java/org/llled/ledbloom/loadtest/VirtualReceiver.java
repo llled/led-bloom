@@ -1,4 +1,4 @@
-package org.llled.wledmux.loadtest;
+package org.llled.ledbloom.loadtest;
 
 import org.llled.ddp.DdpException;
 import org.llled.ddp.DdpFrameListener;
@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * Standalone virtual DDP receiver for scale testing the WLED multiplexer.
+ * Standalone virtual DDP receiver for scale testing LED Bloom.
  *
  * <p>Binds a contiguous range of UDP ports ({@code basePort .. basePort+count-1}); each port
  * stands in for one virtual WLED device. It counts the DDP frames delivered to each port and
- * logs aggregate + per-port FPS once a second, so you can see the framerate the multiplexer is
+ * logs aggregate + per-port FPS once a second, so you can see the framerate LED Bloom is
  * actually able to push out and spot any single device that is lagging the rest.
  *
  * <p>Reuses the project's {@code ddp-lighting-java} {@link DdpReceiver}: {@code onFrameReceived}

@@ -1,11 +1,11 @@
-package org.llled.wledmux.receiver;
+package org.llled.ledbloom.receiver;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.llled.ddp.DdpException;
 import org.llled.ddp.DdpFrameListener;
 import org.llled.ddp.DdpReceiver;
-import org.llled.wledmux.config.MultiplexerConfig;
+import org.llled.ledbloom.config.LedBloomConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,11 +15,11 @@ public class DdpFrameReceiver {
 
     private static final Logger log = LoggerFactory.getLogger(DdpFrameReceiver.class);
 
-    private final MultiplexerConfig config;
+    private final LedBloomConfig config;
     private final DdpFrameListener frameListener;
     private DdpReceiver receiver;
 
-    public DdpFrameReceiver(MultiplexerConfig config, DdpFrameListener frameListener) {
+    public DdpFrameReceiver(LedBloomConfig config, DdpFrameListener frameListener) {
         this.config = config;
         this.frameListener = frameListener;
     }

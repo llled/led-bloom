@@ -1,6 +1,6 @@
-package org.llled.wledmux.api;
+package org.llled.ledbloom.api;
 
-import org.llled.wledmux.config.MultiplexerConfig;
+import org.llled.ledbloom.config.LedBloomConfig;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,9 +12,9 @@ import java.util.Map;
 @RequestMapping("/api/v1")
 public class ConfigController {
 
-    private final MultiplexerConfig config;
+    private final LedBloomConfig config;
 
-    public ConfigController(MultiplexerConfig config) {
+    public ConfigController(LedBloomConfig config) {
         this.config = config;
     }
 

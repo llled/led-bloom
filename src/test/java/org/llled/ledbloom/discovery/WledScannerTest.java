@@ -1,4 +1,4 @@
-package org.llled.wledmux.discovery;
+package org.llled.ledbloom.discovery;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

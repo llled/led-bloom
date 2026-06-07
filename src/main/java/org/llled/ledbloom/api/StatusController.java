@@ -1,9 +1,9 @@
-package org.llled.wledmux.api;
+package org.llled.ledbloom.api;
 
-import org.llled.wledmux.config.MultiplexerConfig;
-import org.llled.wledmux.discovery.WledDeviceRegistry;
-import org.llled.wledmux.forwarder.DdpForwarder;
-import org.llled.wledmux.receiver.DdpFrameReceiver;
+import org.llled.ledbloom.config.LedBloomConfig;
+import org.llled.ledbloom.discovery.WledDeviceRegistry;
+import org.llled.ledbloom.forwarder.DdpForwarder;
+import org.llled.ledbloom.receiver.DdpFrameReceiver;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,10 +21,10 @@ public class StatusController {
     private final DdpForwarder forwarder;
     private final DdpFrameReceiver frameReceiver;
     private final WledDeviceRegistry registry;
-    private final MultiplexerConfig config;
+    private final LedBloomConfig config;
 
     public StatusController(DdpForwarder forwarder, DdpFrameReceiver frameReceiver,
-                            WledDeviceRegistry registry, MultiplexerConfig config) {
+                            WledDeviceRegistry registry, LedBloomConfig config) {
         this.forwarder = forwarder;
         this.frameReceiver = frameReceiver;
         this.registry = registry;

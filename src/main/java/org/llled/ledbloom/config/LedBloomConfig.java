@@ -1,4 +1,4 @@
-package org.llled.wledmux.config;
+package org.llled.ledbloom.config;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@ConfigurationProperties(prefix = "multiplexer")
-public class MultiplexerConfig {
+@ConfigurationProperties(prefix = "ledbloom")
+public class LedBloomConfig {
 
     private int ddpListenPort = 4048;
     private int frameWidth = 64;
@@ -26,8 +26,8 @@ public class MultiplexerConfig {
         if (!mdnsDiscoveryEnabled && !ipRangeDiscoveryEnabled) {
             throw new IllegalStateException(
                 "At least one discovery method must be enabled. " +
-                "Set multiplexer.mdns-discovery-enabled=true and/or " +
-                "multiplexer.ip-range-discovery-enabled=true.");
+                "Set ledbloom.mdns-discovery-enabled=true and/or " +
+                "ledbloom.ip-range-discovery-enabled=true.");
         }
     }
 

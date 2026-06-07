@@ -1,11 +1,11 @@
 # Profile for scale/load testing: neutralize device discovery so it doesn't add noise or
 # register real devices during a run. Activate with --spring.profiles.active=loadtest
 #
-# Exactly one discovery method stays enabled (MultiplexerConfig.validate() forbids disabling
+# Exactly one discovery method stays enabled (LedBloomConfig.validate() forbids disabling
 # both), but it is pointed at the RFC 5737 TEST-NET-1 documentation block (guaranteed
 # unreachable) and runs effectively once, so nothing real gets registered. Manually-added
 # (pinned) load-test devices are never purged regardless.
-multiplexer:
+ledbloom:
   mdns-discovery-enabled: false
   ip-range-discovery-enabled: true
   ip-block: "192.0.2."

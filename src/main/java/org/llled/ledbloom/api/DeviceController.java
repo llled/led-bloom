@@ -1,10 +1,10 @@
-package org.llled.wledmux.api;
+package org.llled.ledbloom.api;
 
-import org.llled.wledmux.discovery.WledDevice;
-import org.llled.wledmux.discovery.WledDeviceRegistry;
-import org.llled.wledmux.discovery.WledDiscoveryRunner;
-import org.llled.wledmux.forwarder.DdpForwarder;
-import org.llled.wledmux.forwarder.DeviceMapping;
+import org.llled.ledbloom.discovery.WledDevice;
+import org.llled.ledbloom.discovery.WledDeviceRegistry;
+import org.llled.ledbloom.discovery.WledDiscoveryRunner;
+import org.llled.ledbloom.forwarder.DdpForwarder;
+import org.llled.ledbloom.forwarder.DeviceMapping;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

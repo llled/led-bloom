@@ -1,6 +1,6 @@
-package org.llled.wledmux.discovery;
+package org.llled.ledbloom.discovery;
 
-import org.llled.wledmux.config.MultiplexerConfig;
+import org.llled.ledbloom.config.LedBloomConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,17 +23,17 @@ public class WledDiscoveryRunner {
 
     private static final Logger log = LoggerFactory.getLogger(WledDiscoveryRunner.class);
 
-    private final MultiplexerConfig config;
+    private final LedBloomConfig config;
     private final WledDeviceRegistry registry;
     private final ExecutorService executor = Executors.newFixedThreadPool(8);
     private String ipBlock;
 
-    public WledDiscoveryRunner(MultiplexerConfig config, WledDeviceRegistry registry) {
+    public WledDiscoveryRunner(LedBloomConfig config, WledDeviceRegistry registry) {
         this.config = config;
         this.registry = registry;
     }
 
-    @Scheduled(fixedDelayString = "${multiplexer.discovery-interval-seconds:60}000",
+    @Scheduled(fixedDelayString = "${ledbloom.discovery-interval-seconds:60}000",
                initialDelayString = "5000")
     public void runDiscovery() {
         String block = resolveIpBlock();
