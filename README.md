@@ -134,3 +134,9 @@ Watch the ceiling on `GET /api/v1/status`: `framesPerSecond` should hold at the 
 is saturated. The receiver logs aggregate + per-port FPS so you can spot stragglers. Step
 `lt.devices`/`vr.count` up until one of those breaks. The runner cleans up its devices on exit
 (`-Dlt.cleanup=false` to leave them). See `org.llled.ledbloom.loadtest` for all `-Dvr.*`/`-Dlt.*` options.
+
+## Future TODOs/Ideas
+* Test on Raspberry Pi, both for core functionality and scale.
+* Ability to remove device via API and web interface in case something shouldn't get traffic and you don't want to restart.
+* Create better distribution with config file on CLI for easier running. 
+* Visual display of where each device is in the grid. 
