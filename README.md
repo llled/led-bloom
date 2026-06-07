@@ -1,8 +1,10 @@
 # LED Bloom
 
-A Java service that receives a single [DDP](http://www.3waylabs.com/ddp/) frame stream and forwards mapped sub-regions of it to many [WLED](https://kno.wled.ge/) matrices discovered on the local network.
+Do you want to run an arbitrary number of WLED devices without needing to register them in your LED software? Or clone a single WLED device pattern to any number of WLED devices? LED Bloom automatically discovers WLED devices on your network, receives a single stream of pixels and fans them out to all of the devices. 
 
-You point any DDP source (xLights, WLED Sync, a custom renderer, etc.) at this service. It discovers WLED devices on your LAN, learns their matrix dimensions, places each one at a random position inside a virtual master canvas, then slices each frame and forwards the corresponding pixels to each device over DDP.
+You point any [DDP](http://www.3waylabs.com/ddp/) source (xLights, WLED Sync, a custom renderer, etc.) at this service. It discovers WLED devices on your LAN, learns their matrix dimensions, places each one at a random position inside a virtual master canvas, then slices each frame and forwards the corresponding pixels to each device over DDP.
+
+Built to power the syncing of wearable  LED costume pieces for the Lava Lounge camp at Burning Flipside. As each new wearable comes into wifi range, this software picks it up, registers it, and starts sending, leading to really fun synced effects. 
 
 ## How it works
 
@@ -50,7 +52,7 @@ Or build a fat jar:
 java -jar build/libs/LED-Bloom-0.1.0.jar
 ```
 
-The HTTP API listens on `:8901`, the DDP receiver on `:4048` (defaults).
+The HTTP Web interface and API listen on `:8901`, the DDP receiver on `:4048` (defaults). The status web page at http://<host-ip>/:8901 will list the active config parameters and discovered devices.
 
 ## Configuration
 
