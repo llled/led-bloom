@@ -1,4 +1,4 @@
-# LED Bloom
+# LED Bloom for WLED
 
 Do you want to run an arbitrary number of WLED devices without needing to register them in your LED software? Or clone a single WLED device pattern to any number of WLED devices? LED Bloom automatically discovers WLED devices on your network, receives a single stream of pixels and fans them out to all of the devices. 
 
