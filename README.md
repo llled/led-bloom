@@ -74,9 +74,12 @@ Base path: `/api/v1`
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/status` | Uptime, frame counts, error counts, device counts |
-| `GET` | `/devices` | All discovered devices with their mapping |
-| `GET` | `/devices/{ip}` | One device by IP |
+| `GET` | `/status` | Uptime, frame counts, error counts, device counts, and forwarder throughput metrics |
+| `GET` | `/devices` | All devices with their mapping |
+| `GET` | `/devices/{id}` | One device by `id` (`ip:port`) or bare `ip` |
+| `POST` | `/devices` | Manually add a device (bypasses discovery); body `{ip, port?, name?, ledCount, width, height}` |
+| `DELETE` | `/devices/{id}` | Remove one device by `id` (`ip:port`) or bare `ip` |
+| `DELETE` | `/devices` | Remove all manually-added (pinned) devices |
 | `POST` | `/discovery/trigger` | Force an immediate discovery sweep |
 
 Example:
@@ -92,3 +95,40 @@ curl -X POST http://localhost:8901/api/v1/discovery/trigger
 - Devices larger than the master frame are clamped (and a warning is logged); consider raising `frame-width`/`frame-height`.
 - Mapping positions are randomized on registration, so a restart re-shuffles where each device pulls its pixels from.
 - mDNS discovery runs for ~5s per cycle; the IP-range probe walks `.2`–`.254` of the detected `/24` and pings each address with a 500 ms timeout.
+
+## Scale testing
+
+A load-test harness lives in `org.llled.wledmux.loadtest`. It measures how many devices the
+multiplexer can push to at a target framerate. Typical setup: run the multiplexer **and** the
+sender on one machine (the sender → ingress hop is loopback) and the virtual receiver on a
+second machine; all N virtual devices point at the receiver's IP across a port range, so only
+the real egress fan-out crosses the LAN.
+
+Run the multiplexer with discovery neutralized so it doesn't add noise:
+
+```sh
+./gradlew bootRun --args='--spring.profiles.active=loadtest'
+```
+
+On the receiver machine, bind a range of ports (one per virtual device):
+
+```sh
+./gradlew runVirtualReceiver "-Dvr.basePort=5000" "-Dvr.count=100"
+```
+
+On the multiplexer machine, register the devices and stream frames at the target fps:
+
+```sh
+./gradlew runLoadTest "-Dlt.receiverHost=<receiver-ip>" "-Dlt.devices=200" "-Dlt.baseEgressPort=5000" "-Dlt.fps=60" "-Dlt.durationSeconds=30" "-Dlt.masterW=64" "-Dlt.masterH=48" "-Dlt.devW=16" "-Dlt.devH=16"
+```
+
+The `-D` arguments are quoted because PowerShell otherwise mangles an unquoted token that
+starts with `-` and contains `.`/`=` (Gradle then reports `Task '.xxx' not found`). The quotes
+are harmless in bash/sh too.
+
+Watch the ceiling on `GET /api/v1/status`: `framesPerSecond` should hold at the target,
+`packetsPerSecond` ≈ `framesPerSecond × activeForwarders`, and `fanoutMicrosAvg` rising toward
+`frameIntervalMicrosAt60` (16667 µs) is the leading indicator that the single-threaded fan-out
+is saturated. The receiver logs aggregate + per-port FPS so you can spot stragglers. Step
+`lt.devices`/`vr.count` up until one of those breaks. The runner cleans up its devices on exit
+(`-Dlt.cleanup=false` to leave them). See `org.llled.wledmux.loadtest` for all `-Dvr.*`/`-Dlt.*` options.

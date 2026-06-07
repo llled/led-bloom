@@ -8,15 +8,15 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class WledDeviceRegistry {
 
     private static final Logger log = LoggerFactory.getLogger(WledDeviceRegistry.class);
 
+    // Keyed by device identity (ip:port).
     private final ConcurrentHashMap<String, WledDevice> devices = new ConcurrentHashMap<>();
     private final MultiplexerConfig config;
 
@@ -35,25 +35,35 @@ public class WledDeviceRegistry {
         this.onDeviceRemoved = callback;
     }
 
+    /** Backward-compatible registration for discovered devices (port 4048, not pinned). */
     public WledDevice register(String ip, String name, int ledCount, int width, int height) {
-        WledDevice existing = devices.get(ip);
+        return register(ip, WledDevice.DEFAULT_PORT, name, ledCount, width, height, false);
+    }
+
+    public WledDevice register(String ip, int port, String name, int ledCount, int width, int height,
+                               boolean pinned) {
+        String key = WledDevice.key(ip, port);
+        WledDevice existing = devices.get(key);
         if (existing != null) {
             boolean changed = existing.getWidth() != width || existing.getHeight() != height;
             existing.setName(name);
             existing.setLedCount(ledCount);
             existing.setWidth(width);
             existing.setHeight(height);
+            // Never un-pin a manually-added device via a later (discovery) re-register.
+            existing.setPinned(existing.isPinned() || pinned);
             existing.touch();
             if (changed && onDeviceRemoved != null && onDeviceAdded != null) {
-                log.info("Device {} changed dimensions, re-registering", ip);
+                log.info("Device {} changed dimensions, re-registering", key);
                 onDeviceRemoved.accept(existing);
                 onDeviceAdded.accept(existing);
             }
             return existing;
         }
 
-        WledDevice device = new WledDevice(ip, name, ledCount, width, height);
-        devices.put(ip, device);
+        WledDevice device = new WledDevice(ip, port, name, ledCount, width, height);
+        device.setPinned(pinned);
+        devices.put(key, device);
         log.info("Registered new device: {}", device);
         if (onDeviceAdded != null) {
             onDeviceAdded.accept(device);
@@ -61,8 +71,44 @@ public class WledDeviceRegistry {
         return device;
     }
 
+    public WledDevice getByKey(String key) {
+        return devices.get(key);
+    }
+
+    public WledDevice get(String ip, int port) {
+        return devices.get(WledDevice.key(ip, port));
+    }
+
+    /** Legacy lookup by bare IP: returns the first device matching that IP (any port). */
     public WledDevice get(String ip) {
-        return devices.get(ip);
+        return devices.values().stream()
+                .filter(d -> d.getIp().equals(ip))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public WledDevice remove(String key) {
+        WledDevice removed = devices.remove(key);
+        if (removed != null && onDeviceRemoved != null) {
+            onDeviceRemoved.accept(removed);
+        }
+        return removed;
+    }
+
+    /** Remove all pinned (manually-added) devices. Returns the number removed. */
+    public int clearPinned() {
+        int[] count = {0};
+        devices.entrySet().removeIf(entry -> {
+            if (entry.getValue().isPinned()) {
+                if (onDeviceRemoved != null) {
+                    onDeviceRemoved.accept(entry.getValue());
+                }
+                count[0]++;
+                return true;
+            }
+            return false;
+        });
+        return count[0];
     }
 
     public Collection<WledDevice> getAll() {
@@ -78,10 +124,14 @@ public class WledDeviceRegistry {
         Instant cutoff = Instant.now().minus(timeout);
 
         devices.entrySet().removeIf(entry -> {
-            if (entry.getValue().getLastSeen().isBefore(cutoff)) {
-                log.warn("Purging expired device: {}", entry.getValue());
+            WledDevice device = entry.getValue();
+            if (device.isPinned()) {
+                return false; // manually-added devices never expire
+            }
+            if (device.getLastSeen().isBefore(cutoff)) {
+                log.warn("Purging expired device: {}", device);
                 if (onDeviceRemoved != null) {
-                    onDeviceRemoved.accept(entry.getValue());
+                    onDeviceRemoved.accept(device);
                 }
                 return true;
             }

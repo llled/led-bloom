@@ -77,10 +77,10 @@
           <template x-if="devices.length === 0">
             <p>No devices discovered yet.</p>
           </template>
-          <template x-for="d in devices" :key="d.ip">
+          <template x-for="d in devices" :key="d.id">
             <div class="zone-info" style="margin: 0.75rem 0">
               <div class="zone-info-title" x-text="d.name"></div>
-              <p>IP: <span x-text="d.ip"></span></p>
+              <p>IP: <span x-text="d.ip + ':' + d.port"></span></p>
               <p>
                 Matrix: <span x-text="d.width + ' x ' + d.height"></span>
                 (<span x-text="d.ledCount"></span> LEDs)
