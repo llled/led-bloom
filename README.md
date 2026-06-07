@@ -113,16 +113,18 @@ Run the multiplexer with discovery neutralized so it doesn't add noise:
 On the receiver machine, bind a range of ports (one per virtual device):
 
 ```sh
-./gradlew runVirtualReceiver -Dvr.basePort=5000 -Dvr.count=100
+./gradlew runVirtualReceiver "-Dvr.basePort=5000" "-Dvr.count=100"
 ```
 
 On the multiplexer machine, register the devices and stream frames at the target fps:
 
 ```sh
-./gradlew runLoadTest -Dlt.receiverHost=<receiver-ip> -Dlt.devices=100 \
-  -Dlt.baseEgressPort=5000 -Dlt.fps=60 -Dlt.durationSeconds=30 \
-  -Dlt.masterW=64 -Dlt.masterH=48 -Dlt.devW=16 -Dlt.devH=16
+./gradlew runLoadTest "-Dlt.receiverHost=<receiver-ip>" "-Dlt.devices=200" "-Dlt.baseEgressPort=5000" "-Dlt.fps=60" "-Dlt.durationSeconds=30" "-Dlt.masterW=64" "-Dlt.masterH=48" "-Dlt.devW=16" "-Dlt.devH=16"
 ```
+
+The `-D` arguments are quoted because PowerShell otherwise mangles an unquoted token that
+starts with `-` and contains `.`/`=` (Gradle then reports `Task '.xxx' not found`). The quotes
+are harmless in bash/sh too.
 
 Watch the ceiling on `GET /api/v1/status`: `framesPerSecond` should hold at the target,
 `packetsPerSecond` ≈ `framesPerSecond × activeForwarders`, and `fanoutMicrosAvg` rising toward
