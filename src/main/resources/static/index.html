@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <title>WLED Multiplexer</title>
+    <script defer src="/js/alpinejs.3.13.5.min.js"></script>
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
+  <body>
+    <div
+      class="app-container"
+      x-data="{
+        config: null,
+        devices: [],
+        loading: false,
+        async load() {
+          try {
+            const [c, d] = await Promise.all([
+              fetch('/api/v1/config').then(r => r.json()),
+              fetch('/api/v1/devices').then(r => r.json())
+            ]);
+            this.config = c;
+            this.devices = d;
+          } catch (e) {
+            console.error('load failed', e);
+          }
+        },
+        async trigger() {
+          this.loading = true;
+          try {
+            await fetch('/api/v1/discovery/trigger', { method: 'POST' });
+            await this.load();
+          } finally {
+            this.loading = false;
+          }
+        }
+      }"
+      x-init="load(); setInterval(() => load(), 5000)"
+    >
+      <div class="header">
+        <h1 class="header-title">WLED Multiplexer</h1>
+        <button
+          class="button button-primary"
+          style="margin-left: auto"
+          @click="trigger()"
+          :disabled="loading"
+        >
+          <span x-text="loading ? 'Scanning...' : 'Trigger Discovery'"></span>
+        </button>
+      </div>
+
+      <div class="main-content">
+        <div class="zone-info">
+          <div class="zone-info-title">Config</div>
+          <template x-if="config">
+            <div>
+              <p>DDP listen port: <span x-text="config.ddpListenPort"></span></p>
+              <p>Frame size: <span x-text="config.frameWidth + ' x ' + config.frameHeight"></span></p>
+              <p>IP block: <span x-text="config.ipBlock || '(auto-detect)'"></span></p>
+              <p>Discovery interval: <span x-text="config.discoveryIntervalSeconds + 's'"></span></p>
+              <p>Device timeout: <span x-text="config.deviceTimeoutMinutes + ' min'"></span></p>
+              <p>mDNS discovery: <span x-text="config.mdnsDiscoveryEnabled ? 'on' : 'off'"></span></p>
+              <p>IP range discovery: <span x-text="config.ipRangeDiscoveryEnabled ? 'on' : 'off'"></span></p>
+              <p>Skip IPs: <span x-text="config.skipIps.length ? config.skipIps.join(', ') : '(none)'"></span></p>
+            </div>
+          </template>
+          <template x-if="!config">
+            <p>Loading...</p>
+          </template>
+        </div>
+
+        <div class="zone-info">
+          <div class="zone-info-title">
+            Devices (<span x-text="devices.length"></span>)
+          </div>
+          <template x-if="devices.length === 0">
+            <p>No devices discovered yet.</p>
+          </template>
+          <template x-for="d in devices" :key="d.ip">
+            <div class="zone-info" style="margin: 0.75rem 0">
+              <div class="zone-info-title" x-text="d.name"></div>
+              <p>IP: <span x-text="d.ip"></span></p>
+              <p>
+                Matrix: <span x-text="d.width + ' x ' + d.height"></span>
+                (<span x-text="d.ledCount"></span> LEDs)
+              </p>
+              <template x-if="d.mapping">
+                <p>
+                  Offset: (<span x-text="d.mapping.translateX"></span>,
+                  <span x-text="d.mapping.translateY"></span>)
+                </p>
+              </template>
+              <p>Last seen: <span x-text="d.lastSeen"></span></p>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

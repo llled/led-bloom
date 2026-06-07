@@ -45,21 +45,19 @@ public class WledDiscoveryRunner {
 
         log.info("Running WLED discovery on {}", ipBlock);
 
-        Set<String> discoveredIps = new HashSet<>();
-        if (config.isMdnsDiscoveryEnabled()) {
-            discoveredIps.addAll(discoverViaMdns());
-        }
-        if (config.isIpRangeDiscoveryEnabled()) {
-            discoveredIps.addAll(discoverViaIpRange());
-        }
-
         Set<String> skipIps = new HashSet<>(config.getSkipIps());
 
-        for (String ip : discoveredIps) {
-            if (skipIps.contains(ip)) {
-                continue;
+        // mDNS-discovered devices are scanned the moment they resolve, so they
+        // are registered without waiting for the (much slower) IP range scan.
+        if (config.isMdnsDiscoveryEnabled()) {
+            discoverViaMdns(skipIps);
+        }
+        if (config.isIpRangeDiscoveryEnabled()) {
+            for (String ip : discoverViaIpRange()) {
+                if (!skipIps.contains(ip)) {
+                    executor.execute(new WledScanner(ip, registry));
+                }
             }
-            executor.execute(new WledScanner(ip, registry));
         }
 
         registry.purgeExpired();
@@ -107,8 +105,8 @@ public class WledDiscoveryRunner {
         return null;
     }
 
-    Set<String> discoverViaMdns() {
-        Set<String> ips = new HashSet<>();
+    void discoverViaMdns(Set<String> skipIps) {
+        Set<String> seen = new HashSet<>();
         JmDNS jmdns = null;
         try {
             jmdns = JmDNS.create(InetAddress.getLocalHost());
@@ -127,9 +125,13 @@ public class WledDiscoveryRunner {
                     ServiceInfo info = event.getInfo();
                     if (info.getHostAddresses().length > 0) {
                         String host = info.getHostAddresses()[0];
-                        if (ips.add(host)) {
-                            log.info("mDNS discovered WLED: {} at {}", info.getName(), host);
+                        if (skipIps.contains(host) || !seen.add(host)) {
+                            return;
                         }
+                        log.info("mDNS discovered WLED: {} at {}", info.getName(), host);
+                        // Scan immediately so the device is registered without
+                        // waiting for the rest of mDNS discovery or the IP scan.
+                        executor.execute(new WledScanner(host, registry));
                     }
                 }
             });
@@ -145,7 +147,6 @@ public class WledDiscoveryRunner {
                 try { jmdns.close(); } catch (IOException e) { log.error("Error closing mDNS", e); }
             }
         }
-        return ips;
     }
 
     Set<String> discoverViaIpRange() {
