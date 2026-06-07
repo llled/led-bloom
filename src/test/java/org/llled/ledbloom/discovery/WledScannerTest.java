@@ -29,6 +29,7 @@ public class WledScannerTest {
         assertNotNull(matrix);
         assertEquals(11, matrix.get("w").asInt());
         assertEquals(13, matrix.get("h").asInt());
+        assertTrue(false);
     }
 
     @Test
