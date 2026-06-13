@@ -67,7 +67,7 @@ Edit `src/main/resources/application.yaml`, override with `--key=value` CLI flag
 | `ledbloom.ip-block` | _auto_ | E.g. `192.168.1.` — overrides auto-detection |
 | `ledbloom.discovery-interval-seconds` | `60` | How often to rescan |
 | `ledbloom.device-timeout-minutes` | `5` | Devices not seen for this long are purged |
-| `ledbloom.skip-ips` | `[]` | IPs to ignore during discovery |
+| `ledbloom.skip-ips` | `[]` | IPs to ignore during discovery. Auto-extended at runtime: any IP we receive DDP frames from is added here (and removed from the device registry) so a source is never treated as a forwarding target. |
 | `logging.level.org.llled.ledbloom` | `DEBUG` | App log level |
 
 ## Sending pixels (configuring a DDP source)

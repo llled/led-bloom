@@ -95,6 +95,22 @@ public class WledDeviceRegistry {
         return removed;
     }
 
+    /** Remove all devices with the given IP (any port). Returns the number removed. */
+    public int removeByIp(String ip) {
+        int[] count = {0};
+        devices.entrySet().removeIf(entry -> {
+            if (entry.getValue().getIp().equals(ip)) {
+                if (onDeviceRemoved != null) {
+                    onDeviceRemoved.accept(entry.getValue());
+                }
+                count[0]++;
+                return true;
+            }
+            return false;
+        });
+        return count[0];
+    }
+
     /** Remove all pinned (manually-added) devices. Returns the number removed. */
     public int clearPinned() {
         int[] count = {0};

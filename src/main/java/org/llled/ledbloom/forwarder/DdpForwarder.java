@@ -14,7 +14,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+import java.net.InetAddress;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -30,6 +32,8 @@ public class DdpForwarder implements DdpFrameListener {
     private final ConcurrentHashMap<String, DeviceMapping> mappings = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, byte[]> deviceBuffers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, byte[]> packetBuffers = new ConcurrentHashMap<>();
+    // Source IPs we have already quarantined, to keep the per-frame hot path cheap.
+    private final Set<String> quarantinedSources = ConcurrentHashMap.newKeySet();
 
     private final AtomicLong frameCount = new AtomicLong();
     private final AtomicLong errorCount = new AtomicLong();
@@ -122,6 +126,30 @@ public class DdpForwarder implements DdpFrameListener {
         mappings.remove(key);
         deviceBuffers.remove(key);
         packetBuffers.remove(key);
+    }
+
+    @Override
+    public void onFrameReceived(byte[] frameData, int dataLength, byte dataType, InetAddress source) {
+        if (source != null) {
+            quarantineSource(source.getHostAddress());
+        }
+        onFrameReceived(frameData, dataLength, dataType);
+    }
+
+    /**
+     * A device that sends us DDP frames is a source, not a sink: forwarding frames back to
+     * it would create a feedback loop. The first time we see frames from an IP, add it to
+     * the skip list (so discovery won't re-add it) and drop any device(s) already registered
+     * at that IP. We still forward the incoming frame on to the real LED devices as normal.
+     */
+    private void quarantineSource(String ip) {
+        if (!quarantinedSources.add(ip)) {
+            return; // already handled — keep the hot path cheap
+        }
+        boolean skipped = config.addSkipIp(ip);
+        int removed = registry.removeByIp(ip);
+        log.info("Quarantined DDP source {} (added to skip-ips={}, removed {} registered device(s))",
+                ip, skipped, removed);
     }
 
     @Override

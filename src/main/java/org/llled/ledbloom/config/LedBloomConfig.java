@@ -4,8 +4,8 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component
 @ConfigurationProperties(prefix = "ledbloom")
@@ -19,7 +19,9 @@ public class LedBloomConfig {
     private int deviceTimeoutMinutes = 5;
     private boolean mdnsDiscoveryEnabled = true;
     private boolean ipRangeDiscoveryEnabled = true;
-    private List<String> skipIps = new ArrayList<>();
+    // CopyOnWriteArrayList so the discovery thread can iterate (snapshotting into a
+    // HashSet each run) while the DDP receiver thread adds newly-seen sources.
+    private List<String> skipIps = new CopyOnWriteArrayList<>();
 
     @PostConstruct
     void validate() {
@@ -56,5 +58,18 @@ public class LedBloomConfig {
     public void setIpRangeDiscoveryEnabled(boolean ipRangeDiscoveryEnabled) { this.ipRangeDiscoveryEnabled = ipRangeDiscoveryEnabled; }
 
     public List<String> getSkipIps() { return skipIps; }
-    public void setSkipIps(List<String> skipIps) { this.skipIps = skipIps; }
+    public void setSkipIps(List<String> skipIps) { this.skipIps = new CopyOnWriteArrayList<>(skipIps); }
+
+    /**
+     * Adds an IP to the skip list if not already present.
+     *
+     * @return true if the IP was newly added, false if it was already present
+     */
+    public synchronized boolean addSkipIp(String ip) {
+        if (skipIps.contains(ip)) {
+            return false;
+        }
+        skipIps.add(ip);
+        return true;
+    }
 }
