@@ -70,6 +70,42 @@ Edit `src/main/resources/application.yaml`, override with `--key=value` CLI flag
 | `ledbloom.skip-ips` | `[]` | IPs to ignore during discovery |
 | `logging.level.org.llled.ledbloom` | `DEBUG` | App log level |
 
+## Sending pixels (configuring a DDP source)
+
+LED Bloom is just a [DDP](http://www.3waylabs.com/ddp/) receiver. You point any DDP-capable
+renderer at it and it fans the frames out to your WLED devices — so from the source's point of
+view, LED Bloom looks like one big virtual matrix. There's nothing to install on the source
+side; you only need to tell it where to send packets.
+
+Aim your source at:
+
+- **Host** — the machine running LED Bloom (its LAN IP, or `led-bloom.local`).
+- **Port** — `4048` (the WLED/DDP default; matches `ledbloom.ddp-listen-port`).
+- **Resolution** — match the master canvas: `frame-width × frame-height` (default `64 × 48`).
+  That's `width × height` pixels = `width × height × 3` RGB channels (default `3072` px /
+  `9216` channels). LED Bloom slices this canvas across your devices, so the source should
+  render to these dimensions, not to any individual device's size.
+
+### xLights
+
+In xLights, LED Bloom is added as a single **Ethernet** controller speaking **DDP**
+([xLights Ethernet controller setup](https://manual.xlights.org/xlights/chapters/chapter-four-set-up/lighting-networks/ethernet-controller)):
+
+1. **Setup → Add Ethernet**, then select the new controller row.
+2. Set **IP Address** to the LED Bloom host (LAN IP or `led-bloom.local`).
+3. Set **Protocol** to **DDP**.
+4. Leave **Channels Per Packet** at `1440` and enable **Keep Channels Per Packet**.
+5. Set **Channels** to cover the master canvas (`frame-width × frame-height × 3`; `9216` for
+   the defaults), then lay out a matrix/model of `frame-width × frame-height` against it.
+
+### WLED Sync, FPP, custom renderers
+
+Any other DDP source works the same way — point it at the LED Bloom host on port `4048` and
+have it stream `frame-width × frame-height` RGB frames. See the
+[WLED DDP documentation](https://kno.wled.ge/advanced/ddp/) for background on the protocol and
+WLED's DDP support. A minimal custom sender just needs to emit standard DDP packets (RGB,
+pixel-data destination) at your target framerate.
+
 ## REST API
 
 Base path: `/api/v1`
